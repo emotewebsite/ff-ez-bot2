@@ -1,3 +1,6 @@
+Flask
+flask-cors
+aiohttp
 requests
 httpx
 google
@@ -8,5 +11,4 @@ PyJWT
 urllib3
 protobuf-decoder
 pytz
-aiohttp
 cfonts
