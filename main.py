@@ -1,4 +1,3 @@
-#SUBSCRIBE TO RM GAMING IND
 import os
 import sys
 import time
@@ -38,13 +37,12 @@ from Pb2 import (
     PorTs_pb2,
     MajoRLoGinrEq_pb2,
     sQ_pb2,
-    Team_msg_pb2,
-    room_join_pb2
+    Team_msg_pb2
 )
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-ADMIN_UID = "4368569733"
+ADMIN_UID = "4368569733"   # ye admin UID hai, change karne ki zaroorat nahi (agar public hai to chhodo, but also use env)
 Uid = os.environ.get("GUEST_UID")
 Pw = os.environ.get("GUEST_PASSWORD")
 region = 'IN'
@@ -96,13 +94,14 @@ BADGE_REQUESTS = 5
 exploit_running = False
 exploit_instance = None
 
+# Global variables for Flask API
 bot_key = None
 bot_iv = None
 bot_region = None
 main_asyncio_loop = None
 flask_thread = None
 
-# -------------------- Dictionaries --------------------
+# -------------------- All your original dictionaries (keep them) --------------------
 evo_emotes = {
     "1": "909000063",
     "2": "909000068",
@@ -181,7 +180,7 @@ BADGE_VALUES = {
     "s5": 262144
 }
 
-# -------------------- Helper Functions (original, with small fixes) --------------------
+# -------------------- All helper functions (exact copies from original) --------------------
 def fixnum(num):
     num_str = str(num)
     return "[C]" + "[C]".join(num_str) + "[C]"
@@ -213,6 +212,7 @@ async def nmnmmmmn(packet_hex, key, iv):
     return await encrypt_packet(packet_hex, key, iv)
 
 async def RoomJoin(room_id, password, key, iv):
+    # ... (keep original, though not used in API, but required for completeness)
     try:
         from Pb2.room_join_pb2 import join_room
         root = join_room()
@@ -269,7 +269,7 @@ async def XRLeaveRoom(uid, key, iv):
         packet_hex = root.SerializeToString().hex()
         encrypted_packet = await encrypt_packet(packet_hex, key, iv)
         packet_length = len(encrypted_packet) // 2
-        packet_len_hex = base_to_hex(packet_length)  # fixed: removed await
+        packet_len_hex = await base_to_hex(packet_length)
         if len(packet_len_hex) == 2:
             header = "0e15000000"
         elif len(packet_len_hex) == 3:
@@ -309,7 +309,7 @@ async def Look_Changer(bundle_id, key, iv, look_type=1, region="ind"):
     packet_hex = packet.hex()
     encrypted = await encrypt_packet(packet_hex, key, iv)
     header_length = len(encrypted) // 2
-    header_length_hex = base_to_hex(header_length)  # fixed: removed await
+    header_length_hex = await DecodE_HeX(header_length)
     if region.lower() == "ind":
         packet_type = "0514"
     elif region.lower() == "bd":
@@ -827,6 +827,7 @@ async def reset_bot_state(key, iv, region):
         return False
 
 async def handle_badge_command(cmd, inPuTMsG, uid, chat_id, key, iv, region, chat_type):
+    # This function is kept but will never be called because we removed all command handling
     pass
 
 async def handle_emote_list_command(uid, chat_id, chat_type, key, iv):
@@ -911,6 +912,7 @@ async def auto_hammer_slam_emote_dual(sender_uid, key, iv, region):
         pass
 
 async def Room_Spam(Uid, Rm, Nm, K, V):
+    # Not used, but kept for completeness
     return True
 
 async def evo_cycle_spam(uids, key, iv, region):
@@ -925,8 +927,7 @@ async def reject_spam_loop(target_uid, key, iv):
 async def handle_reject_completion(spam_task, target_uid, sender_uid, chat_id, chat_type, key, iv):
     pass
 
-# -------------------- Fixed helper: base_to_hex (sync, no await) --------------------
-def base_to_hex(number):
+async def base_to_hex(number):
     hex_str = hex(number)[2:]
     if len(hex_str) % 2 != 0:
         hex_str = '0' + hex_str
@@ -1106,7 +1107,7 @@ async def GeNeRaTeAccEss(uid, password):
     async with aiohttp.ClientSession() as session:
         async with session.post(url, headers=headers, data=data) as response:
             if response.status != 200:
-                return (None, None)
+                return (None, None)   # FIX: return tuple, not string
             data = await response.json()
             open_id = data.get("open_id")
             access_token = data.get("access_token")
@@ -1222,7 +1223,7 @@ async def decode_team_packet(hex_packet):
 async def xAuThSTarTuP(TarGeT, token, timestamp, key, iv):
     uid_hex = hex(TarGeT)[2:]
     uid_length = len(uid_hex)
-    encrypted_timestamp = base_to_hex(timestamp)  # fixed: removed await
+    encrypted_timestamp = await DecodE_HeX(timestamp)
     encrypted_account_token = token.encode().hex()
     encrypted_packet = await EnC_PacKeT(encrypted_account_token, key, iv)
     encrypted_packet_length = hex(len(encrypted_packet) // 2)[2:]
@@ -1313,77 +1314,7 @@ async def send_sticker(target_uid, chat_id, key, iv, nickname="rmgamingindxBOT")
 def get_random_evo_emote():
     return int(random.choice([evo_emotes[str(i)] for i in range(1, 19)]))
 
-# -------------------- FIX: Missing packet builders (GenJoinSquadsPacket, Emote_k, ExiT) --------------------
-async def GenJoinSquadsPacket(team_code, key, iv):
-    try:
-        from Pb2.room_join_pb2 import join_room
-        root = join_room()
-        root.field_1 = 4
-        nested = root.field_2
-        nested.field_4 = b"\x01\x09\x0a\x0b\x12\x19\x20"
-        nested.field_5 = str(team_code)
-        nested.field_6 = 6
-        nested.field_8 = 1
-        nested.field_9.field_2 = 800
-        nested.field_9.field_6 = 11
-        nested.field_9.field_8 = "1.111.1"
-        nested.field_9.field_9 = 5
-        nested.field_9.field_10 = 1
-        packet_bytes = root.SerializeToString()
-        packet_hex = packet_bytes.hex()
-        encrypted = await encrypt_packet(packet_hex, key, iv)
-        pkt_len = len(encrypted) // 2
-        len_hex = base_to_hex(pkt_len)
-        if len(len_hex) == 2: header = "0514000000"
-        elif len(len_hex) == 3: header = "051400000"
-        elif len(len_hex) == 4: header = "05140000"
-        elif len(len_hex) == 5: header = "0514000"
-        else: header = "0514000000"
-        return bytes.fromhex(header + len_hex + encrypted)
-    except Exception as e:
-        print(f"GenJoinSquadsPacket error: {e}")
-        return None
-
-async def Emote_k(target_uid, emote_id, key, iv, region):
-    try:
-        fields = {
-            1: 21,
-            2: {
-                1: 804266360,
-                2: 909000001,
-                5: {1: int(target_uid), 3: int(emote_id)}
-            }
-        }
-        packet_bytes = await CrEaTe_ProTo(fields)
-        packet_hex = packet_bytes.hex()
-        ptype = "0514" if region.lower() == "ind" else "0519" if region.lower() == "bd" else "0515"
-        return await GeneRaTePk(packet_hex, ptype, key, iv)
-    except Exception as e:
-        print(f"Emote_k error: {e}")
-        return None
-
-async def ExiT(_, key, iv):
-    try:
-        from Pb2.room_join_pb2 import join_room
-        root = join_room()
-        root.field_1 = 7
-        root.field_2.field_1 = 12480598706
-        packet_bytes = root.SerializeToString()
-        packet_hex = packet_bytes.hex()
-        encrypted = await encrypt_packet(packet_hex, key, iv)
-        pkt_len = len(encrypted) // 2
-        len_hex = base_to_hex(pkt_len)
-        if len(len_hex) == 2: header = "0514000000"
-        elif len(len_hex) == 3: header = "051400000"
-        elif len(len_hex) == 4: header = "05140000"
-        elif len(len_hex) == 5: header = "0514000"
-        else: header = "0514000000"
-        return bytes.fromhex(header + len_hex + encrypted)
-    except Exception as e:
-        print(f"ExiT error: {e}")
-        return None
-
-# -------------------- TCP Online Connection --------------------
+# -------------------- TCP Online Connection (keep alive) --------------------
 async def TcPOnLine(ip, port, key, iv, AutHToKen, reconnect_delay=0.5):
     global online_writer
     while True:
@@ -1393,6 +1324,7 @@ async def TcPOnLine(ip, port, key, iv, AutHToKen, reconnect_delay=0.5):
             bytes_payload = bytes.fromhex(AutHToKen)
             online_writer.write(bytes_payload)
             await online_writer.drain()
+            # Keep connection alive – read but ignore data
             while True:
                 data = await reader.read(9999)
                 if not data:
@@ -1404,7 +1336,7 @@ async def TcPOnLine(ip, port, key, iv, AutHToKen, reconnect_delay=0.5):
             online_writer = None
         await asyncio.sleep(reconnect_delay)
 
-# -------------------- TCP Chat Connection --------------------
+# -------------------- TCP Chat Connection (simplified – no command processing) --------------------
 async def TcPChaT(ip, port, AutHToKen, key, iv, LoGinDaTaUncRypTinG, ready_event, region, reconnect_delay=0.5):
     global whisper_writer
     while True:
@@ -1415,6 +1347,7 @@ async def TcPChaT(ip, port, AutHToKen, key, iv, LoGinDaTaUncRypTinG, ready_event
             whisper_writer.write(bytes_payload)
             await whisper_writer.drain()
             ready_event.set()
+            # Optional: send clan authentication if needed
             if hasattr(LoGinDaTaUncRypTinG, 'Clan_ID') and LoGinDaTaUncRypTinG.Clan_ID:
                 clan_id = LoGinDaTaUncRypTinG.Clan_ID
                 clan_compiled_data = LoGinDaTaUncRypTinG.Clan_Compiled_Data
@@ -1422,10 +1355,12 @@ async def TcPChaT(ip, port, AutHToKen, key, iv, LoGinDaTaUncRypTinG, ready_event
                 if whisper_writer:
                     whisper_writer.write(pK)
                     await whisper_writer.drain()
+            # Read and ignore all messages (no command processing)
             while True:
                 data = await reader.read(9999)
                 if not data:
                     break
+                # Do nothing with the data – just keep connection alive
             whisper_writer.close()
             await whisper_writer.wait_closed()
             whisper_writer = None
@@ -1460,26 +1395,22 @@ def api_join():
 
     async def action():
         try:
-            # Join squad
-            join_pkt = await GenJoinSquadsPacket(tc, bot_key, bot_iv)
-            if not join_pkt:
-                return {'error': 'Failed to create join packet'}
-            online_writer.write(join_pkt)
-            await online_writer.drain()
-            await asyncio.sleep(0.5)  # reduced from 1 sec to avoid lag
+            join_packet = await GenJoinSquadsPacket(tc, bot_key, bot_iv)
+            if join_packet:
+                online_writer.write(join_packet)
+                await online_writer.drain()
+                await asyncio.sleep(1)
 
-            # Send emote to each UID
             for uid in uids:
-                emote_pkt = await Emote_k(uid, int(emote_id), bot_key, bot_iv, bot_region)
-                if emote_pkt:
-                    online_writer.write(emote_pkt)
+                emote_packet = await Emote_k(uid, int(emote_id), bot_key, bot_iv, bot_region)
+                if emote_packet:
+                    online_writer.write(emote_packet)
                     await online_writer.drain()
-                    await asyncio.sleep(0.2)  # reduced from 0.3 sec
+                    await asyncio.sleep(0.3)
 
-            # Leave squad
-            leave_pkt = await ExiT(None, bot_key, bot_iv)
-            if leave_pkt:
-                online_writer.write(leave_pkt)
+            leave_packet = await ExiT(None, bot_key, bot_iv)
+            if leave_packet:
+                online_writer.write(leave_packet)
                 await online_writer.drain()
 
             return {'success': True, 'message': f'Joined {tc}, sent emote {emote_id} to {len(uids)} UID(s): {uids}, left'}
@@ -1510,9 +1441,6 @@ def start_flask():
     app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
 
 # -------------------- Main --------------------
-class RestartBot(Exception):
-    pass
-
 async def MaiiiinE():
     global bot_key, bot_iv, bot_region, main_asyncio_loop, flask_thread, online_writer, whisper_writer
 
@@ -1583,7 +1511,7 @@ async def MaiiiinE():
 
     # Show loading animation
     os.system('clear')
-    print("🤖 rmgamingind BOT - STARTING")
+    print("🤖 FFEZBOT 2 - STARTING")
     print("=" * 50)
     for i in range(1, 4):
         dots = "." * i
@@ -1591,7 +1519,7 @@ async def MaiiiinE():
         time.sleep(0.3)
 
     os.system('clear')
-    print("🤖 rmgamingind BOT - CONNECTING")
+    print("🤖 FFEZBOT 2 - CONNECTING")
     print("=" * 50)
     print("┌────────────────────────────────────┐")
     print("│ ██████████████████████████████████ │")
@@ -1607,7 +1535,7 @@ async def MaiiiinE():
     os.system('clear')
     print(render('rmgamingind', colors=['white', 'green'], align='center'))
     print('')
-    print("🤖 RMGAMINGIND EMOTE API - ONLINE")
+    print("🤖 FFEZBOT EMOTE API - ONLINE")
     print("=" * 50)
     print(f"🔹 UID: {TarGeT}")
     print(f"🔹 Name: {acc_name}")
